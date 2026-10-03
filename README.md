@@ -10,6 +10,8 @@ Built and tested on an **NVIDIA H200 (141 GB)** and an **RTX PRO 6000 Blackwell 
 - **Ollama** serving open-weight models locally (GPU-accelerated)
 - **Open WebUI** — a ChatGPT-style interface
 - **Qwen2.5-72B-Instruct (abliterated)** — a 72B generalist with refusal behavior removed
+- **Qwen2.5-Coder-32B (abliterated)** — an uncensored coding model that matches/beats GPT-4o on many
+  coding benchmarks, and (unlike filtered coders) won't refuse legitimate security/offensive code
 - A **public URL** via a Cloudflare quick tunnel (no account needed), so you can use it from any browser or phone
 - One idempotent script — `bash setup.sh` — that brings the whole stack up
 
@@ -48,9 +50,19 @@ run on a single GPU. On 96–141 GB cards you have ample headroom to run additio
 |---|---|
 | Inference | Ollama |
 | UI | Open WebUI (port 8080) |
-| Default model | Qwen2.5-72B-Instruct abliterated · Q4_K_M · ~47 GB |
+| Chat model | Qwen2.5-72B-Instruct abliterated · Q4_K_M · ~47 GB |
+| Coding model | Qwen2.5-Coder-32B-Instruct abliterated · Q4_K_M · ~20 GB |
 | Public access | Cloudflare quick tunnel |
 | GPU tested | H200 (141 GB), RTX PRO 6000 Blackwell (96 GB) |
+
+### Other uncensored models worth trying
+
+```bash
+# lighter / faster uncensored coder
+MODEL="" CODER_MODEL=hf.co/mradermacher/Qwen2.5-Coder-14B-Instruct-abliterated-GGUF:Q4_K_M bash setup.sh
+# Dolphin (refusal-free, available directly on Ollama)
+docker exec ollama ollama pull dolphin-mixtral:8x7b
+```
 
 ## Files
 

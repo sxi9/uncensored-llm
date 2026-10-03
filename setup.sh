@@ -11,22 +11,32 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-# Default uncensored model (abliterated = refusal behavior removed).
+# Models to pull (abliterated = refusal behavior removed = "uncensored").
+#   MODEL       : general-purpose chat
+#   CODER_MODEL : uncensored coding (matches/beats GPT-4o on many coding benchmarks)
+# Override either from the environment, or set to "" to skip.
 MODEL="${MODEL:-hf.co/mradermacher/Qwen2.5-72B-Instruct-abliterated-GGUF:Q4_K_M}"
+CODER_MODEL="${CODER_MODEL:-hf.co/mradermacher/Qwen2.5-Coder-32B-Instruct-abliterated-GGUF:Q4_K_M}"
 
 # ---------- 1. start Ollama + Open WebUI ----------
 echo "[*] Starting containers..."
 docker compose up -d
 
-# ---------- 2. pull the model (only if missing) ----------
+# ---------- 2. pull the models (only if missing) ----------
 echo "[*] Waiting for Ollama to be ready..."
 until docker exec ollama ollama list >/dev/null 2>&1; do sleep 2; done
-if docker exec ollama ollama list | grep -q "${MODEL%%:*}"; then
-  echo "[=] $MODEL already present — skipping download"
-else
-  echo "[*] Pulling $MODEL (large, one-time)..."
-  docker exec ollama ollama pull "$MODEL"
-fi
+pull_if_missing() {
+  local m="$1"
+  [ -z "$m" ] && return 0
+  if docker exec ollama ollama list | grep -q "${m%%:*}"; then
+    echo "[=] $m already present — skipping download"
+  else
+    echo "[*] Pulling $m (large, one-time)..."
+    docker exec ollama ollama pull "$m"
+  fi
+}
+pull_if_missing "$MODEL"
+pull_if_missing "$CODER_MODEL"
 
 # ---------- 3. public URL via Cloudflare quick tunnel ----------
 if ! command -v cloudflared >/dev/null 2>&1 && [ ! -x ./cloudflared ]; then
