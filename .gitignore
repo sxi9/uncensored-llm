@@ -1,0 +1,4 @@
+cloudflared
+cloudflared.log
+*.log
+.DS_Store
